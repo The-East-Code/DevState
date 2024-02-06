@@ -1,4 +1,4 @@
-import tkinter as ttk
+import tkinter as tk
 from tkinter import messagebox, filedialog, Listbox, Scrollbar
 import platform
 import subprocess
@@ -26,7 +26,7 @@ class UpdateCheckerApp:
 
         self.setup_logging()
 
-        self.hardware_info_label = ttk.Label(root, text="", bg=self.label_bg_color, fg=self.text_color, font=self.font_style)
+        self.hardware_info_label = tk.Label(root, text="", bg=self.label_bg_color, fg=self.text_color, font=self.font_style)
         self.hardware_info_label.pack(pady=20)
         
         # Call get_hardware_info here to display system information when the app starts
@@ -35,27 +35,27 @@ class UpdateCheckerApp:
         # Call get_hardware_info here to display system information when the app starts
         self.get_hardware_info()
 
-        self.check_updates_button = ttk.Button(root, text="Check for Updates", command=self.check_updates, bg=self.button_color, fg=self.button_text_color, font=self.font_style)
+        self.check_updates_button = tk.Button(root, text="Check for Updates", command=self.check_updates, bg=self.button_color, fg=self.button_text_color, font=self.font_style)
         self.check_updates_button.pack(pady=10)
 
-        self.check_software_updates_button = ttk.Button(root, text="Check Software Updates", command=self.check_software_updates, bg=self.button_color, fg=self.button_text_color, font=self.font_style)
+        self.check_software_updates_button = tk.Button(root, text="Check Software Updates", command=self.check_software_updates, bg=self.button_color, fg=self.button_text_color, font=self.font_style)
         self.check_software_updates_button.pack(pady=10)
 
-        self.choose_log_location_button = ttk.Button(root, text="Choose Log Location", command=self.choose_log_location, bg=self.button_color, fg=self.button_text_color, font=self.font_style)
+        self.choose_log_location_button = tk.Button(root, text="Choose Log Location", command=self.choose_log_location, bg=self.button_color, fg=self.button_text_color, font=self.font_style)
         self.choose_log_location_button.pack(pady=10)
         
     
 
     def create_custom_dialog(self, title, message):
-        dialog = ttk.Toplevel(self.root)
+        dialog = tk.Toplevel(self.root)
         dialog.title(title)
         dialog.configure(bg='#333333')
         dialog.geometry("600x400")
 
-        message_label = ttk.Label(dialog, text=message, wraplength=350, bg=self.label_bg_color, fg=self.text_color, font=self.font_style)
+        message_label = tk.Label(dialog, text=message, wraplength=350, bg=self.label_bg_color, fg=self.text_color, font=self.font_style)
         message_label.pack(padx=10, pady=10)
 
-        close_button = ttk.Button(dialog, text="Close", command=dialog.destroy, bg=self.button_color, fg=self.button_text_color, font=self.font_style)
+        close_button = tk.Button(dialog, text="Close", command=dialog.destroy, bg=self.button_color, fg=self.button_text_color, font=self.font_style)
         close_button.pack(pady=10)
 
     def setup_logging(self):
@@ -137,7 +137,7 @@ class UpdateCheckerApp:
                 pass
 
         # Create popup 
-        popup = ttk.Toplevel(self.root)
+        popup = tk.Toplevel(self.root)
         listbox = Listbox(popup)
         listbox.pack()
 
@@ -145,16 +145,17 @@ class UpdateCheckerApp:
         for name, version in installed_programs.items():
             update = self.check_update(name)  # Use self.check_update
             if update:
-                listbox.insert(ttk.END, f"{name}: {version} -> {update}")
+                listbox.insert(tk.END, f"{name}: {version} -> {update}")
 
         # Add scrollbar
         scrollbar = Scrollbar(popup, command=listbox.yview)
-        scrollbar.pack(side=ttk.RIGHT, fill=ttk.Y)
+        scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
         listbox.config(yscrollcommand=scrollbar.set)
 
     def check_update(self, name):  # Define check_update within the class
         # Check website, API, etc and return latest version
         return "2.0"
+
 
     def choose_log_location(self):
         log_location = filedialog.askdirectory()
@@ -166,6 +167,6 @@ class UpdateCheckerApp:
 
 
 if __name__ == "__main__":
-    root = ttk.Tk()
+    root = tk.Tk()
     app = UpdateCheckerApp(root)
     root.mainloop()

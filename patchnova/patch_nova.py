@@ -61,7 +61,7 @@ class UpdateCheckerApp:
 
         self.setup_logging()
         # Initialize backup directory for update rollback
-        self.backup_path = "system_backup"
+        self.backup_path = "testBakup"
         if not os.path.exists(self.backup_path):
             os.makedirs(self.backup_path)
             self.logger.info("Backup directory created successfully.")
@@ -90,15 +90,15 @@ class UpdateCheckerApp:
         try:
             # Backup directory name with timestamp
             timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-            backup_path = "system_backup_" + timestamp
+            backup_path = "testBak" + timestamp
             
             # Check if the backup directory already exists
             if os.path.exists(backup_path):
                 # If it exists, create a new unique backup directory name
-                backup_path = "system_backup_" + timestamp
+                backup_path = "nova__" + timestamp
                 
             # Create the backup directory
-            # os.makedirs(backup_path)
+            os.makedirs(backup_path)
 
             # Copy files from the root directory to the backup directory
             for root, dirs, files in os.walk("/"):
@@ -237,7 +237,7 @@ class UpdateCheckerApp:
 
             if ask_if_should_update:
                 # Create a backup before applying updates
-                backup_path = "system_backup"
+                backup_path = "testBak"
                 shutil.copytree("/", backup_path)  # Copy entire system to backup folder
                 self.logger.info("System backup created successfully.")
                 # Check for updates based on the user's operating system

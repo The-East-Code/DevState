@@ -13,6 +13,9 @@ import urllib.request
     
 if platform.system() == 'Windows':
     import winreg
+    import os
+    import shutil
+    import datetime
 
 
 class UpdateCheckerApp:
@@ -57,6 +60,69 @@ class UpdateCheckerApp:
         self.show_logs_button.pack(pady=10)
 
         self.setup_logging()
+        # Initialize backup directory for update rollback
+        self.backup_path = "system_backup"
+        if not os.path.exists(self.backup_path):
+            os.makedirs(self.backup_path)
+            self.logger.info("Backup directory created successfully.")
+        else:
+            self.logger.info("Backup directory already exists.")
+        # Button for rollback updates
+        self.rollback_button = tk.Button(root, text="Rollback Updates", command=self.rollback_updates)
+        self.rollback_button.pack(pady=10)  # Add some padding for aesthetic purposes
+
+        # Check for any existing backup and offer rollback option
+        if self.check_existing_backup():
+            rollback_prompt = messagebox.askyesno("Rollback Updates", "A previous backup exists. Do you want to rollback updates?")
+            if rollback_prompt:
+                self.rollback_updates()
+            else:
+                self.logger.info("User chose not to rollback updates.")
+
+    def check_existing_backup(self):
+        # Check if there's any existing backup
+        if os.listdir(self.backup_path):
+            return True
+        else:
+            return False
+
+    def rollback_updates(self):
+        try:
+            # Backup directory name with timestamp
+            timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+            backup_path = "system_backup_" + timestamp
+            
+            # Check if the backup directory already exists
+            if os.path.exists(backup_path):
+                # If it exists, create a new unique backup directory name
+                backup_path = "system_backup_" + timestamp
+                
+            # Create the backup directory
+            # os.makedirs(backup_path)
+
+            # Copy files from the root directory to the backup directory
+            for root, dirs, files in os.walk("/"):
+                for file in files:
+                    src_file = os.path.join(root, file)
+                    dest_file = os.path.join(backup_path, os.path.relpath(src_file, "/"))
+
+                    # Check if destination file exists and is writable
+                    if os.path.exists(dest_file) and not os.access(dest_file, os.W_OK):
+                        self.logger.warning(f"Skipping {dest_file}: Permission denied")
+                        continue
+
+                    # Copy file from root directory to backup directory
+                    shutil.copy2(src_file, dest_file)
+                    self.logger.info(f"Copied {src_file} to {dest_file}")
+
+            # Inform the user about the successful rollback
+            messagebox.showinfo("Rollback Successful", "Updates have been rolled back successfully.")
+        except Exception as e:
+            # Log any errors that occur during the rollback process
+            self.logger.error(f"Error occurred during rollback: {str(e)}")
+            messagebox.showerror("Rollback Failed", "Error occurred during rollback. Please check logs for details.")
+
+
 
 
     def show_logs(self):
@@ -170,6 +236,10 @@ class UpdateCheckerApp:
             ask_if_should_update = messagebox.askyesno("User Consent", "Are you sure?")
 
             if ask_if_should_update:
+                # Create a backup before applying updates
+                backup_path = "system_backup"
+                shutil.copytree("/", backup_path)  # Copy entire system to backup folder
+                self.logger.info("System backup created successfully.")
                 # Check for updates based on the user's operating system
                 if platform.system() == 'Windows':
                     # Trigger Windows Update
@@ -206,9 +276,30 @@ class UpdateCheckerApp:
                     self.create_custom_dialog("Unsupported System",
                                             "Updates are not supported for the current operating system.")
                 self.logger.info("Update process completed.")
+                
+                # Check if user wants to roll back updates
+                rollback_prompt = messagebox.askyesno("Rollback Updates", "Do you want to rollback updates?")
+                if rollback_prompt:
+                    # Rollback updates by restoring from backup
+                    if os.path.exists(backup_path):
+                        shutil.rmtree("/")
+                        shutil.copytree(backup_path, "/")
+                        self.logger.info("Updates rolled back successfully.")
+                        messagebox.showinfo("Rollback Successful", "Updates have been rolled back successfully.")
+                    else:
+                        self.logger.error("Backup not found. Unable to rollback updates.")
+                        messagebox.showerror("Rollback Failed", "Backup not found. Unable to rollback updates.")
+                else:
+                    self.logger.info("User chose not to rollback updates.")
             
             else:
                 self.create_custom_dialog("User Does Not Consent",
+                                          "Understood. Updates will not be installed on your system. Thank you.")
+                self.logger.info("User chose not to install updates.")
+
+                   
+        else:
+            self.create_custom_dialog("User Does Not Consent",
                                                 "Understood. PatchNova will not install any updates on your system. Thank you.")
 
 
